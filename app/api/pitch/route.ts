@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Data BMC tidak valid.' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: language === 'en' ? 'OpenAI API Key not configured on the server.' : 'OpenAI API Key belum dikonfigurasi di server.' },

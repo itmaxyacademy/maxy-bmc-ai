@@ -11,10 +11,8 @@ import {
   Loader2, 
   Target, 
   Lightbulb, 
-  Share2, 
   HeartHandshake, 
   Coins, 
-  Wrench, 
   Activity, 
   Users, 
   Receipt, 
@@ -51,7 +49,7 @@ const initialBmcData: BmcData = {
 };
 
 const stepIcons = [
-  Users, Target, Share2, HeartHandshake, Coins, Wrench, Activity, Users, Receipt
+  Users, Gem, Megaphone, HeartHandshake, Coins, Database, Activity, Handshake, Receipt
 ];
 
 export interface AnalysisData {
@@ -95,13 +93,13 @@ const getTutorialSteps = (lang: Language) => [
 const downloadWordDoc = (filename: string, title: string, bodyHtml: string) => {
   const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${title}</title></head><body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>`;
   const footer = '</body></html>';
-  const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(header + bodyHtml + footer);
+  const blob = new Blob([header + bodyHtml + footer], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  document.body.appendChild(link);
-  link.href = source;
+  link.href = url;
   link.download = filename;
   link.click();
-  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 const stepIndexMap: Record<BmcStepId, number> = {
@@ -317,10 +315,6 @@ export default function BmcSimulator() {
       setCurrentStepIndex((prev) => (prev === index ? prev : index));
     });
   }, []);
-
-  const stepSelectHandlers = useMemo(() => {
-    return [0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => () => selectStep(idx));
-  }, [selectStep]);
 
   const handleInputChange = (value: string) => {
     const currentStepId = steps[currentStepIndex].id;
@@ -565,7 +559,7 @@ export default function BmcSimulator() {
         isActive={currentStepIndex === stepIdx}
         isFilled={bmcData[id].trim() !== ''}
         isHighlighted={isTutorialActive && currentTutorialSteps[tutorialStepIndex].target === id}
-        onSelect={stepSelectHandlers[stepIdx]}
+        onSelect={() => selectStep(stepIdx)}
       />
     );
   };
@@ -754,6 +748,9 @@ export default function BmcSimulator() {
                 </p>
 
                 <textarea
+                  id="bmc-step-input"
+                  name="bmc-step-input"
+                  aria-label={currentStep.title}
                   value={bmcData[currentStep.id]}
                   onChange={(e) => handleInputChange(e.target.value)}
                   placeholder={currentStep.placeholder}
